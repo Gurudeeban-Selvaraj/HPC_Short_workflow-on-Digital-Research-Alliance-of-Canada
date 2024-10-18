@@ -1,0 +1,83 @@
+#Downstream ANALYSIS of_PROTEIN_PEPTIDE_Complexes
+
+#Creating non-periodic boundary (noPBC) file
+>trjconv -s production_50.tpr -f production_50.xtc -o production_50_center.xtc -pbc mol -ur compact
+press 0 for corrected trajectory
+
+#Calculate RMSD for protein-peptide complex
+>gmx rms -s production_50.tpr -f production_50_center.xtc -o rmsd.xvg -tu ns
+select 4 for both least square & rmsd
+
+#Separating protein and peptides in gro or topl files
+>gmx make_ndx -f production_50.tpr -o peptide.ndx
+
+# Peptide/ligands starts from aa to aa
+> a 3490-3823
+
+#getting output
+Found the 334 atoms in the range 3490-3823
+16 a_3490-3823 : 334 atoms
+
+# rename the 16 as peptide (pep)
+> name 16 pep
+#close
+>q
+
+# Protein starts from aa to aa
+> a 1-3489
+
+#getting output
+Found the 3489 atoms in the range 1-3489
+17 a_1-3489 : 3489 atoms
+
+# rename the 17 as protein (prot)
+> name 17 prot
+
+#close
+>q
+
+#calculate RMSD for peptide 
+> gmx rms -s production_50.tpr -f production_50_center.xtc -o rmsd_pep.xvg -n peptide.ndx -tu ns
+select pep (16) for both least square & rmsd
+
+#Calculate RMSD for protein 
+> gmx rms -s production_50.tpr -f production_50_center.xtc -o rmsd_prot.xvg -n peptide.ndx -tu ns
+select prot (17) for both least square & rmsd
+
+#Calculate RMSF of complex
+gmx rmsf -s production_50.tpr -f production_50_center.xtc -o rmsf.xvg -res -n peptide.ndx
+
+#Calculate RMSF of protein
+gmx rmsf -s production_50.tpr -f production_50_center.xtc -o rmsf_prot.xvg -res -n peptide.ndx
+
+#Calculate RMSF of peptide
+gmx rmsf -s production_50.tpr -f production_50_center.xtc -o rmsf_pep.xvg -res -n peptide.ndx
+
+#Calculate Rg of complex
+gmx gyrate -s production_50.tpr -f production_50_center.xtc -o gyrate.xvg
+#Calculate Rg of protein
+gmx gyrate -s production_50.tpr -f production_50_center.xtc -o gyrate_prot.xvg -n peptide.ndx
+
+#Calculate Rg of peptide
+gmx gyrate -s production_50.tpr -f production_50_center.xtc -o gyrate_pep.xvg -n peptide.ndx
+
+#calculate HB of complex
+gmx hbond -f production_50.xtc -s production_50.tpr -num hydrogen2-bond-intra-protein.xvg -n peptide.ndx
+
+g_hbond -f md_0_1_noPBC.xtc -s md_0_1.tpr -num hydrogen2-bond-protein-water.xvg
+
+#calculate SASA of complex
+gmx sasa -f production_50.xtc -s production_50.tpr -o sas2.xvg -oa atomic2-sas.xvg -or residue2-sas.xvg 
+#calculate SASA of protein
+gmx sasa -f production_50.xtc -s production_50.tpr -o sas2_prot.xvg -oa atomic2-sas_prot.xvg -or residue2-sas_prot.xvg -n peptide.ndx
+
+#calculate SASA of peptide
+gmx sasa -f production_50.xtc -s production_50.tpr -o sas2_pep.xvg -oa atomic2-sas_pep.xvg -or residue2-sas_pep.xvg -n peptide.ndx
+
+> gmx rmsf -s production_50.tpr -f production_50_center.xtc -o rmsf.xvg -res
+
+g_gyrate -s production_50.tpr -f production_50_center.xtc -o gyrate.xvg
+
+g_sas -f md_0_1_noPBC.xtc -s md_0_1.tpr -o sas2.xvg -oa atomic2-sas.xvg -or residue2-sas.xvg
+g_hbond -f md_0_1_noPBC.xtc -s md_0_1.tpr -num hydrogen2-bond-intra-protein.xvg
+g_hbond -f md_0_1_noPBC.xtc -s md_0_1.tpr -num hydrogen2-bond-protein-water.xvg
