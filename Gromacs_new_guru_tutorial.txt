@@ -1,0 +1,83 @@
+
+The load the modules,# Load the modules
+module load StdEnv/2016.4
+module load gromacs
+module load/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/MPI/intel2016.4/openmpi2.1/gromacs/2018/bin/gmx_mpi
+
+#1 Preparing Minimization file:(enter to desire folder example Gromacs)
+gmx grompp -f step4.0_minimization.mdp -c step3_input.gro -r step3_input.gro -p topol.top -o minimization.tpr
+As a result the minimization.tpr file was generated (within 1 min)
+
+#2 Minimization:
+gmx mdrun -v -deffnm minimization
+As a result the minimization .trr .edr .gro .log file was generated (within 3 to 5 min)
+Note, it shows "killed " means rerun the steps, one finished it shows like the below
+(For d elta writing lowest energy coordinates.
+Steepest Descents converged to Fmax < 1000 in 1461 steps
+Potential Energy  = -2.2056312e+06
+Maximum force     =  9.9130847e+02 on atom 645
+Norm of force     =  1.1892474e+01)
+
+
+#3 Preparing Equilibration file:
+gmx grompp -f step4.1_equilibration.mdp -o equilibration.tpr -c minimization.gro -r minimization.gro -p topol.top -n index.ndx
+equilibration .tpr file was generated
+
+
+#4 Run script for equilibration
+sbatch equi.sh
+(Note: the equilibrium script file is like below
+#!/bin/bash
+#SBATCH --gres=gpu:1
+#SBATCH --ntasks=1              # Number of MPI process
+#SBATCH --cpus-per-task=32      # CPU cores per MPI process
+#SBATCH --mem=4G               # memory per node
+#SBATCH --time=24:00:00           # time (DD-HH:MM)
+#SBATCH --account=def-peslherb
+# mpirun or srun also work
+module load/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/MPI/intel2016.4/openmpi2.1/gromacs/2018/bin/gmx_mpi
+export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
+nvidia-smi
+echo "Starting run at: `date`"
+gmx mdrun -v -deffnm equilibration)
+
+
+#5 Preparing production file:
+first open the step5_production.mdp in the terminal by using the command to copy the file 
+
+Initial Run
+# Copy and prepare production_1.mdp  
+cp step5_production.mdp production_1.mdp
+
+# Change the number of steps in .mdp file
+For 1ns=1000ps=500000steps
+For 50ns=50000ps=25000000 steps
+For 100ns=500000ps=50000000 steps
+
+# Prepare the production_1.tpr
+
+gmx grompp -f step5_production_1.mdp -c equilibration.gro -t equilibration.cpt -p topol.top -o production_1.tpr -n index.ndx 
+or (if you are getting error follow the below command)
+gmx grompp -f production_1.mdp -c equilibration.gro -t equilibration.cpt -p topol.top -o production_1.tpr -n index.ndx -maxwarn 1
+
+# Run production
+Before this, open the file and change the name as production_1 by using
+vi prod.sh
+
+#For initial run the script has following command
+gmx mdrun -v -deffnm production_1 -maxh 72
+
+#To continue the jobs for long run 50 or 100 ns follow the command in the script
+gmx mdrun -v -deffnm production_1 -cpi production_1.cpt -append -maxh 72  (# Use .cpt file from previous run)
+Again un the script by using sbatch prod1.sh
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
