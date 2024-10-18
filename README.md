@@ -1,5 +1,5 @@
-# HPC_Short_workflow-on-Digital-Research-Alliance-of-Canada
-Digital Research Alliance of Canada (the Alliance) clusters workflows
+# HPC_Short_workflows/tutorials_for_calculations_in_clusters_of_Digital-Research-Alliance-of-Canada
+Digital Research Alliance of Canada (the Alliance) clusters user workflows/tutorials
 
 
 GROMACS: This workflow outlines the essential commands and processes involved in performing molecular dynamics simulations using GROMACS, focusing on energy minimization, equilibration, and production runs.
