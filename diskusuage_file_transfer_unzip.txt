@@ -1,0 +1,26 @@
+
+#Unzip the solution build by Charmm-gui
+
+First enter in to desire file path, Example Delta Gromacs 
+cd "/project/6000083/username/Pep1Delta/gromacs/"  
+then unzip by using tar -vxsf charmm-gui.tar
+then by using uparrow do the same for other files too, if have
+
+# Disk space check
+diskusage_report
+
+# Copying files between different clusters via terminal [cedar to graham/scratch dir] (file location to transfer location)
+scp -r nameoffolder (#file location) username@graham.computecanada.ca:scratch/ (#transfer location)
+
+
+# Copying files from home dir to scratch dir (file location to transfer location)
+scp -r /project/6000083/username/p1beta /scractch/username/Peptide_MD/
+
+# Copying files from scratch dir to home dir (file location to transfer location)
+scp -r /scractch/username/Peptide_MD /project/6000083/username/
+
+
+# Copying files from desktop to HPC clusters [psi or graham/scratch dir] (file location to transfer location)
+open cmd in windows 
+in the commmand prompt
+C:\Users\username>scp -r C:\Users\username\Documents\Notes\E-Courses username@psi.concordia.ca:/home/nameofuserin_hpc/Notes_office
